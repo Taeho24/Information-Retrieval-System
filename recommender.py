@@ -119,7 +119,7 @@ def main():
     results = []
     
     # 테스트 데이터의 각 행에 대해 예측
-    # iterrows는 느리지만 코드가 직관적입니다. 속도가 중요하다면 vectorization을 고려해야 합니다.
+    # iterrows는 느리지만 코드가 직관적, 속도가 중요하다면 vectorization을 고려
     for _, row in test_data.iterrows():
         u_id = int(row['user_id'])
         i_id = int(row['item_id'])
