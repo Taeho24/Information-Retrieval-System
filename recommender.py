@@ -37,39 +37,6 @@ class MatrixFactorization:
         self.b_u = np.zeros(self.num_users) # 사용자 편향
         self.b_i = np.zeros(self.num_items) # 아이템 편향
         self.b = np.mean(self.train_data['rating']) # 전체 평균
-        
-        # # 기본 통계 계산 (Cold Start 대비)
-        # self.global_mean = self.train_data['rating'].mean()
-        # self.user_means = self.train_data.groupby('user_id')['rating'].mean()
-        # self.item_means = self.train_data.groupby('item_id')['rating'].mean()
-        
-        # # 사용자-아이템 매트릭스 생성 (피벗 테이블)
-        # self.user_item_matrix = self.train_data.pivot(index='user_id', columns='item_id', values='rating')
-        
-        # # 평균 중심화(Mean Centering) - 사용자별 편향 제거
-        # self.matrix_norm = self.user_item_matrix.subtract(self.user_item_matrix.mean(axis=1), axis=0)
-        
-        # # 사용자 간 유사도 계산 (코사인 유사도)
-        # # NaN을 0으로 채우고 계산
-        # self.user_similarity = self.compute_similarity(self.matrix_norm.fillna(0))
-
-    # def compute_similarity(self, matrix):
-    #     # Cosine Similarity: A . B / (|A| * |B|)
-    #     # numpy를 사용하여 효율적으로 계산
-    #     matrix_sparse = matrix.values
-    #     similarity = np.dot(matrix_sparse, matrix_sparse.T)
-        
-    #     # 대각선 성분(자기 자신과의 내적)에 대한 제곱근 벡터
-    #     square_mag = np.diag(similarity)
-    #     inv_square_mag = 1 / square_mag
-    #     inv_square_mag[np.isinf(inv_square_mag)] = 0
-    #     inv_mag = np.sqrt(inv_square_mag)
-        
-    #     # 코사인 유사도 행렬 완성
-    #     cosine_sim = similarity * inv_mag
-    #     cosine_sim = cosine_sim.T * inv_mag
-        
-    #     return pd.DataFrame(cosine_sim, index=matrix.index, columns=matrix.index)
 
     def fit(self):
             # 학습 데이터를 리스트 형태로 변환 (속도 최적화)
@@ -96,14 +63,14 @@ class MatrixFactorization:
                     self.b_i[i] += self.alpha * (e - self.beta * self.b_i[i])
                     
                     # 잠재 행렬 업데이트
-                    # P[u] 업데이트를 위해 Q[i]가 필요하고, 그 반대도 마찬가지
                     P_u_old = self.P[u, :].copy() 
                     self.P[u, :] += self.alpha * (e * self.Q[i, :] - self.beta * self.P[u, :])
                     self.Q[i, :] += self.alpha * (e * P_u_old - self.beta * self.Q[i, :])
                 
-                # (옵션) 학습 진행 상황 출력 - 제출시에는 주석 처리 가능
+                # (옵션) 학습 진행 상황 출력
                 if (epoch+1) % 5 == 0:
-                    print(f"Training: {2*(epoch+1)}% finished")
+                    progress = (epoch + 1) / self.epochs * 100
+                    print(f"Training: {progress:.1f}% finished")
             
     def predict(self, user_id, item_id):
         """
